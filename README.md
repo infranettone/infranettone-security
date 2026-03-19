@@ -1,26 +1,47 @@
 # infranettone-security
 
-## Analyse the vulnerabilities of a Docker image
+## Content index
 
-### Bash Tools
+- [1. Analyse the vulnerabilities of a Docker image](#1-analyse-the-vulnerabilities-of-a-docker-image)
+  - [1.1 Bash Tools](#11-bash-tools)
+    - [1.1.1 trivy](#111-trivy)
+    - [1.1.2 grype](#112-grype)
+    - [1.1.3 docker scout (Docker official)](#113-docker-scout-docker-official)
+- [2. Docker images without vulnerabilities](#2-docker-images-without-vulnerabilities)
+  - [2.1 distroless](#21-distroless)
+  - [2.2 alpine](#22-alpine)
+  - [2.3 scratch](#23-scratch)
+  - [2.4 Multi-stage builds examples](#24-multi-stage-builds-examples)
+    - [2.4.1 Node](#241-node)
+    - [2.4.2 Go](#242-go)
+- [3. In Kubernetes](#3-in-kubernetes)
+  - [3.1 Root filesystem read-only](#31-root-filesystem-read-only)
+  - [3.2 Run as non-root](#32-run-as-non-root)
+  - [3.3 Capabilities](#33-capabilities)
+  - [3.4 Don't allow privilege escalation](#34-dont-allow-privilege-escalation)
+  - [3.5 Enable Linux Security Modules:](#35-enable-linux-security-modules)
 
-* trivy
+## 1. Analyse the vulnerabilities of a Docker image
 
-  * sudo apt install trivy
+### 1.1 Bash Tools
 
-  * trivy image image-name:tag
+#### 1.1.1 trivy
 
-    * Operating system CVEs (Common Vulnerabilities and Exposures)
+* sudo apt install trivy
 
-    * Libraries CVEs
+* trivy image image-name:tag
 
-    * Vulnerable packages
+  * Operating system CVEs (Common Vulnerabilities and Exposures)
 
-    * Insecure configurations
+  * Libraries CVEs
 
-  * trivy image --severity CRITICAL,HIGH
+  * Vulnerable packages
 
-* grype
+  * Insecure configurations
+
+* trivy image --severity CRITICAL,HIGH
+
+#### 1.1.2 grype
 
   * Useful for Software Bill of Materials (SBOM)
 
@@ -34,7 +55,7 @@
 
      * Scan SBOM
 
-* docker scout (Docker official)
+#### 1.1.3 docker scout (Docker official)
 
   * docker scout cves image-name:tag
 
@@ -44,17 +65,17 @@
 
     * Shows which base image you should update
 
-## Docker images without vulnerabilities
+## 2. Docker images without vulnerabilities
 
-* distroless
+### 2.1 distroless
 
-* alpine
+### 2.2 alpine
 
-* scratch
+### 2.3 scratch
 
-* Multi-stage builds examples
+### 2.4 Multi-stage builds examples
 
-  * Node
+#### 2.4.1 Node
 
 ```Dockerfile
 # build stage
@@ -75,7 +96,7 @@ COPY --from=builder /app .
 CMD ["server.js"]
 ```  
 
-  * Go
+#### 2.4.2 Go
 
 ```Dockerfile
 FROM golang:1.22 AS builder
@@ -91,16 +112,16 @@ CMD ["/app"]
 
 
 
-## In Kubernetes
+## 3. In Kubernetes
 
-* Root filesystem read-only
+### 3.1 Root filesystem read-only
 
 ```yaml
 securityContext:
   readOnlyRootFilesystem: true
 ```
 
-* Run as non-root
+### 3.2 Run as non-root
 
 ```yaml
 securityContext:
@@ -108,12 +129,12 @@ securityContext:
   runAsUser: 1000
 ```
 
-* Capabilities
+### 3.3 Capabilities
 
-  * Linux has ~40 capabilities that enable dangerous things. For example:
-   * CAP_SYS_ADMIN
-   * CAP_NET_ADMIN
-   * CAP_SYS_PTRACE
+* Linux has ~40 capabilities that enable dangerous things. For example:
+  * CAP_SYS_ADMIN
+  * CAP_NET_ADMIN
+  * CAP_SYS_PTRACE
 ```yaml
 securityContext:
   capabilities:
@@ -121,15 +142,15 @@ securityContext:
       - ALL
 ```
 
-* Don't allow privilege escalation
+### 3.4 Don't allow privilege escalation
 ```yaml
 securityContext:
   allowPrivilegeEscalation: false
 ```
 
-* Enable Linux Security Modules:
+### 3.5 Enable Linux Security Modules:
 
-  * seccomp + AppArmor:
+* seccomp + AppArmor:
 
 ```yaml
 spec:
@@ -138,7 +159,7 @@ spec:
       type: RuntimeDefault
 ```
 
-  * eBPF runtime protection: It works with tools such as **Cilium** or **Falco** that monitor syscalls using eBPF:
+* eBPF runtime protection: It works with tools such as **Cilium** or **Falco** that monitor syscalls using eBPF:
 
 ```yaml
 metadata:
